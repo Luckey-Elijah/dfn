@@ -19,7 +19,7 @@
 
     ```sh
     $ dfn config add example
-    Registered 1 new script from /path/to/example/dfn
+    Registered 1 new script from /path/to/example/scripts
     - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
     ```
 
