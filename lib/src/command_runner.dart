@@ -101,7 +101,7 @@ Future<int> tryHandleScript({
   }
 
   for (final path in config.packages) {
-    final directory = Directory(join(path, 'dfn'));
+    final directory = Directory(join(path, 'scripts'));
     await for (final file in directory
         .list()
         .where((e) => e is File)

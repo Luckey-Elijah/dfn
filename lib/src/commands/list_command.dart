@@ -74,7 +74,7 @@ Stream<File> lsScriptFiles({
       continue;
     }
 
-    final scriptsDirectory = Directory(join(packageDirectory.path, 'dfn'));
+    final scriptsDirectory = Directory(join(packageDirectory.path, 'scripts'));
 
     if (!scriptsDirectory.existsSync()) {
       onInvalidPath(scriptsDirectory.path);
