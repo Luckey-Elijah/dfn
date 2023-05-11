@@ -32,7 +32,8 @@ class ListCommand extends Command<int> {
           .fail('No scripts registered.\nRegister a new script with $example');
       return ExitCode.success.code;
     } else {
-      progress.complete('${files.length} scripts found:');
+      final s = files.length > 1 ? 's' : '';
+      progress.complete('${files.length} script$s found:');
 
       for (final file in files) {
         final name = styleBold.wrap(

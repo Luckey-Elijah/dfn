@@ -4,6 +4,7 @@
         "canonicalize",
         "endtemplate",
         "pubspec",
-        "TLDR"
+        "TLDR",
+        "writeln"
     ]
 }
