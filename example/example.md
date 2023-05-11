@@ -43,7 +43,7 @@
 
     ```sh
     $ dfn hello_from_folder
-    Hello from dfn folder!
+    Hello from script folder!
     ```
 
 6. remove `example` scripts
