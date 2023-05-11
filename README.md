@@ -12,9 +12,7 @@
 - `dfn config remove <path/to/my_package>` to de-register a script collection from `dfn`
 - `dfn -h` for help with usage
 
-**❗ `dfn` has a few reserved commands that _cannot_ be used for script names. If there are ever conflicts, `dfn` will prompt you to rename the `.dart` file or not register it at all.**
-
-Commands that reserved and **cannot be used** as script names:
+Commands that reserved and **won't work** as script names:
 - `list` _lists all registered scripts and their sources_
 - `config` _entry point for configuring all things `dfn`_
 
