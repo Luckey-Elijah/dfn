@@ -20,7 +20,7 @@
     ```sh
     $ dfn config add example
     Registered 1 new script from /path/to/example/dfn
-    - hello_from_folder -> /path/to/example/dfn/hello_from_folder.dart
+    - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
     ```
 
 4. list newly registered scripts
@@ -29,7 +29,7 @@
     $ dfn list
     ✓ 2 scripts found:
       - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
-      - hello_from_folder -> /path/to/example/dfn/hello_from_folder.dart
+      - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
     ```
 
 5. run `hello_from_standalone`

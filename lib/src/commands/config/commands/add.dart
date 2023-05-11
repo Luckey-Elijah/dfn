@@ -73,13 +73,14 @@ class ConfigAddCommand extends Command<int> {
           return ExitCode.usage.code;
         }
 
-        final dfnDirectory = Directory(join(directory.absolute.path, 'dfn'));
-        if (!dfnDirectory.existsSync()) {
-          logger.err('$path does not contain subfolder "dfn"');
+        final scriptsDirectory =
+            Directory(join(directory.absolute.path, 'scripts'));
+        if (!scriptsDirectory.existsSync()) {
+          logger.err('$path does not contain subfolder "scripts"');
           return 127;
         }
 
-        final newScripts = await dfnDirectory
+        final newScripts = await scriptsDirectory
             .list()
             .where((entity) => entity is File)
             .cast<File>()
@@ -98,7 +99,7 @@ class ConfigAddCommand extends Command<int> {
         final count = newScripts.length;
         final s = newScripts.length > 1 ? 's' : '';
         logger.success(
-          'Registered $count new script$s from ${dfnDirectory.absolute.path}',
+          'Registered $count new script$s from ${scriptsDirectory.absolute.path}',
         );
 
         for (final script in newScripts) {
