@@ -27,9 +27,9 @@ class ListCommand extends Command<int> {
     ).toList();
 
     if (files.isEmpty) {
-      final example = styleBold.wrap('dfn config add <Script>');
+      final example = styleBold.wrap('dfn config add <script or path>');
       progress
-          .fail('No scripts registered. Register a new script with $example');
+          .fail('No scripts registered.\nRegister a new script with $example');
       return ExitCode.success.code;
     } else {
       progress.complete('${files.length} scripts found:');
@@ -42,7 +42,7 @@ class ListCommand extends Command<int> {
           uri: Uri.file(file.absolute.path),
           message: file.absolute.path,
         );
-        logger.detail('  - $name $path');
+        logger.detail('  - $name -> $path');
       }
     }
 

@@ -28,48 +28,59 @@ class ConfigRemoveCommand extends Command<int> {
 
     final args = results.arguments;
     if (args.isEmpty) {
-      final example = styleBold.wrap('dfn config remove <script>');
-      logger.err('Please specify a path: $example');
+      final example = styleBold.wrap('dfn config remove <script or path>');
+      logger.err('Please specify a script or path: $example');
       return ExitCode.usage.code;
     }
+
     final (configFile, config) = await getConfig();
     final newStandalone = <String>[];
     final newPackages = <String>[];
 
+    var didRemove = false;
+
     for (final option in args) {
       for (final path in config.standalone) {
-        final scriptName = split(path).last.replaceAll('.dart', '');
-        if (option != scriptName) {
+        final matchesScriptName =
+            option == split(path).last.replaceAll('.dart', '');
+        late final matchesPath = canonicalize(option) == canonicalize(path);
+
+        if (!matchesScriptName && !matchesPath) {
           newStandalone.add(path);
           continue;
         }
-
+        didRemove = true;
         logger.success(
-          'Removed: ${styleBold.wrap(scriptName)} $path',
+          'Removed: ${styleBold.wrap(path)}',
         );
       }
 
       for (final package in config.packages) {
-        if (option != package) {
+        if (canonicalize(option) != canonicalize(package)) {
           newPackages.add(package);
           continue;
         }
+        didRemove = true;
         logger.success(
           'Removed: ${styleBold.wrap(package)}',
         );
       }
     }
 
-    await writeConfig(
-      DfnConfig(
-        packages: newPackages,
-        standalone: newStandalone,
-        version: DfnConfig.currentVersion,
-        source: configFile,
-      ),
-      configFile,
-    );
+    if (didRemove) {
+      await writeConfig(
+        DfnConfig(
+          packages: newPackages,
+          standalone: newStandalone,
+          version: DfnConfig.currentVersion,
+          source: configFile,
+        ),
+        configFile,
+      );
+      return ExitCode.success.code;
+    }
 
+    logger.err('Could not remove ${args.map(styleBold.wrap).join(', ')}');
     return ExitCode.usage.code;
   }
 }

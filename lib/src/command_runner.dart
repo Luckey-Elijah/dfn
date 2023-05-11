@@ -82,8 +82,6 @@ Future<int> tryHandleScript({
   }
 
   Future<int> runScript(File file) async {
-    final command = 'dart ${file.absolute.path} ${args.join(' ')}';
-    logger.detail(command);
     final results = await Process.start(
       'dart',
       [file.absolute.path, ...args],
@@ -104,8 +102,12 @@ Future<int> tryHandleScript({
 
   for (final path in config.packages) {
     final directory = Directory(join(path, 'dfn'));
-    await for (final file
-        in directory.list().where((e) => e is File).cast<File>()) {
+    await for (final file in directory
+        .list()
+        .where((e) => e is File)
+        .cast<File>()
+        .where((file) => file.absolute.path.endsWith('.dart'))
+        .where((file) => !split(file.absolute.path).last.startsWith('_'))) {
       final fileName = split(file.absolute.path).last;
       if (fileName == scriptName ||
           fileName.replaceAll('.dart', '') == scriptName) {

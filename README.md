@@ -11,7 +11,6 @@
 - `dfn config remove <script_name>` to de-register a script that has been registered as a "standalone" script
 - `dfn config remove <path/to/my_package>` to de-register a script collection from `dfn`
 - `dfn -h` for help with usage
-- `dfn -v` the current version
 
 **❗ `dfn` has a few reserved commands that _cannot_ be used for script names. If there are ever conflicts, `dfn` will prompt you to rename the `.dart` file or not register it at all.**
 
@@ -22,8 +21,8 @@ Commands that reserved and **cannot be used** as script names:
 `dfn config add` looks for a directory called `dfn` in a given path. Given you have a dart package called: `example` at `path/to/my/example`. Everything in `example/dfn` will be registered to `dfn`s scripts.
 
 ```sh
-$ dfn config add scripts path/to/my/example
-dfn found 4 scripts in path/to/my/example/dfn
+$ dfn config add path/to/my/example
+Registered 4 new scripts from /absolute/path/to/my/example/dfn
 - upgrade_all_pub
 - search_folder
 - watch_files

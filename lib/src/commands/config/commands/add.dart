@@ -33,8 +33,8 @@ class ConfigAddCommand extends Command<int> {
       return ExitCode.usage.code;
     }
 
-    for (final path in args) {
-      logger.detail('trying to $path');
+    for (final arg in args) {
+      final path = normalize(arg);
       final pathType = FileSystemEntity.typeSync(path);
       final (configFile, config) = await getConfig();
       if (pathType == FileSystemEntityType.file) {
@@ -73,6 +73,20 @@ class ConfigAddCommand extends Command<int> {
           return ExitCode.usage.code;
         }
 
+        final dfnDirectory = Directory(join(directory.absolute.path, 'dfn'));
+        if (!dfnDirectory.existsSync()) {
+          logger.err('$path does not contain subfolder "dfn"');
+          return 127;
+        }
+
+        final newScripts = await dfnDirectory
+            .list()
+            .where((entity) => entity is File)
+            .cast<File>()
+            .where((file) => file.absolute.path.endsWith('.dart'))
+            .where((file) => !split(file.absolute.path).last.startsWith('_'))
+            .toList();
+
         final newConfig = DfnConfig(
           packages: [...config.packages, directory.absolute.path],
           standalone: config.standalone,
@@ -81,7 +95,19 @@ class ConfigAddCommand extends Command<int> {
         );
 
         await writeConfig(newConfig, newConfig.source);
-        logger.success('Registered ${directory.absolute.path}');
+        final count = newScripts.length;
+        final s = newScripts.length > 1 ? 's' : '';
+        logger.success(
+          'Registered $count new script$s from ${dfnDirectory.absolute.path}',
+        );
+
+        for (final script in newScripts) {
+          final path = script.absolute.path;
+          final name = styleBold.wrap(split(path).last.replaceAll('.dart', ''));
+          final source = link(uri: Uri.file(path), message: path);
+          logger.detail('  - $name -> $source');
+        }
+
         return ExitCode.success.code;
       }
     }
