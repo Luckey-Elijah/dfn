@@ -37,7 +37,7 @@ class ConfigRemoveCommand extends Command<int> {
       );
     }
 
-    final (configFile, config) = await getConfig();
+    final (configFile, config) = await getConfig(logger);
     final newStandalone = <String>[];
     final newPackages = <String>[];
 
@@ -80,6 +80,7 @@ class ConfigRemoveCommand extends Command<int> {
           source: configFile,
         ),
         configFile,
+        logger,
       );
       return ExitCode.success.code;
     }

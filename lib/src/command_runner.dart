@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dfn/src/commands/commands.dart';
 import 'package:dfn/src/commands/config/config.dart';
@@ -22,7 +23,12 @@ class DfnCommandRunner extends CommandRunner<int> {
     addCommand(ListCommand(logger: logger));
     argParser.addFlag(
       'verbose',
-      callback: (verbose) => verbose ? logger.level = Level.verbose : null,
+      callback: (verbose) {
+        if (!verbose) return;
+        logger
+          ..level = Level.verbose
+          ..detail('Verbose logging enabled.');
+      },
       help: 'Enable verbose logging.',
       negatable: false,
     );
@@ -46,15 +52,27 @@ class DfnCommandRunner extends CommandRunner<int> {
       if (targetName == 'dfn' ||
           targetName == ':dfn' ||
           targetName == 'dfn:dfn') {
+        logger.detail(
+          'Tried calling `dfn` from dfn which is results in recursive builds.',
+        );
         throw UsageException('Do not call "dfn" with "dfn".', 'dfn <script>');
       }
 
-      if (hasCommand || topLevelResults.wasParsed('help')) {
+      argParser.options.keys.any(topLevelResults.wasParsed);
+
+      if (hasCommand ||
+          argParser.options.keys.any(
+            topLevelResults.wasParsed,
+          )) {
+        logger.detail(
+          'A built in was called: ${prettyArgResultsPrint(topLevelResults)}',
+        );
         return await runCommand(topLevelResults) ?? ExitCode.success.code;
       }
 
       if (hasTargetName) {
-        final (_, config) = await getConfig();
+        logger.detail('Trying to call a target: $targetName');
+        final (_, config) = await getConfig(logger);
 
         return handleTarget(
           target: targetName,
@@ -135,26 +153,42 @@ Future<int> handleTarget({
 String? home =
     Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 
-Future<(File, DfnConfig)> getConfig() async {
+Future<(File, DfnConfig)> getConfig(Logger logger) async {
+  logger.detail('Checking for if home path exists: $home.');
+
   if (!Directory(normalize('$home')).existsSync()) {
     throw FileSystemException('User home path does not exist.', '$home');
   }
 
-  final configFile = File(join('$home', '.dfn'));
+  logger.detail('Home path exists ✓.');
+  final path = join('$home', '.dfn');
+  final configFile = File(path);
+  logger.detail('Checking for if dfn config exists: $path.');
+
   if (!configFile.existsSync()) {
+    logger.detail('No dfn config found. Creating empty dfn config at $path.');
     // initialize the default config
     final empty = DfnConfig.empty(configFile);
-    final config = (await writeConfig(empty, configFile)).$2;
+    final config = (await writeConfig(empty, configFile, logger)).$2;
     return (configFile, config);
   }
+  logger.detail('✓ dfn config exists.');
   final contents = await configFile.readAsString();
   final config = DfnConfig.fromJson(contents, configFile);
   return (configFile, config);
 }
 
-Future<(File, DfnConfig)> writeConfig(DfnConfig config, File source) async {
+Future<(File, DfnConfig)> writeConfig(
+  DfnConfig config,
+  File source,
+  Logger logger,
+) async {
   await source.create();
-  await source.writeAsString(jsonEncode(config.toMap()));
+  final data = config.toMap();
+  await source.writeAsString(jsonEncode(data));
+  logger
+    ..detail('Wrote to ${source.absolute.path}: ')
+    ..detail(jsonPretty(data));
   return (source, config);
 }
 
@@ -201,4 +235,31 @@ class DfnConfig {
         'standalone': standalone,
         'version': version,
       };
+}
+
+String jsonPretty(Map<Object?, Object?> json) {
+  final buffer = StringBuffer();
+  final bold = styleBold.wrap;
+
+  for (final MapEntry(:key, :value) in json.entries) {
+    buffer
+      ..write('${bold('$key')}: ')
+      ..writeln(value is Map ? jsonPretty(value) : value);
+  }
+
+  return '$buffer';
+}
+
+String prettyArgResultsPrint(ArgResults results) {
+  final hasCommand = results.command != null;
+  final commandLabel =
+      hasCommand ? prettyArgResultsPrint(results.command!) : results.command;
+  final buffer = StringBuffer()
+    ..writeln('{')
+    ..writeln('  name: ${results.name}')
+    ..writeln('  rest: ${results.rest}')
+    ..writeln('  arguments: ${results.arguments}')
+    ..writeln('  command: $commandLabel')
+    ..writeln('}');
+  return '$buffer';
 }

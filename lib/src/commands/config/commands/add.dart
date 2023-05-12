@@ -39,7 +39,7 @@ class ConfigAddCommand extends Command<int> {
     for (final arg in args) {
       final path = normalize(arg);
       final pathType = FileSystemEntity.typeSync(path);
-      final (configFile, config) = await getConfig();
+      final (configFile, config) = await getConfig(logger);
       if (pathType == FileSystemEntityType.file) {
         final file = File(path);
         if (!file.existsSync()) {
@@ -60,7 +60,7 @@ class ConfigAddCommand extends Command<int> {
           source: configFile,
           version: DfnConfig.currentVersion,
         );
-        await writeConfig(newConfig, newConfig.source);
+        await writeConfig(newConfig, newConfig.source, logger);
         final scriptName =
             split(file.absolute.path).last.replaceAll('.dart', '');
         logger.success('Registered $scriptName');
@@ -107,7 +107,7 @@ class ConfigAddCommand extends Command<int> {
           version: DfnConfig.currentVersion,
         );
 
-        await writeConfig(newConfig, newConfig.source);
+        await writeConfig(newConfig, newConfig.source, logger);
         final count = newScripts.length;
         final s = newScripts.length > 1 ? 's' : '';
         logger.success(

@@ -24,11 +24,12 @@ class ListCommand extends Command<int> {
   Future<int> run() async {
     final progress = logger.progress('Reading register scripts');
 
-    final (_, config) = await getConfig();
+    final (_, config) = await getConfig(logger);
 
     final files = await lsScriptFiles(
       config: config,
       onInvalidPath: (path) => logger.err('Failed finding script(s) at $path'),
+      logger: logger,
     ).toList();
 
     if (files.isEmpty) {
@@ -59,7 +60,9 @@ class ListCommand extends Command<int> {
 Stream<File> lsScriptFiles({
   required DfnConfig config,
   required void Function(String) onInvalidPath,
+  required Logger logger,
 }) async* {
+  logger.detail('Checking for standalone scripts');
   for (final path in config.standalone) {
     final file = File(path);
 
@@ -71,6 +74,7 @@ Stream<File> lsScriptFiles({
     yield file;
   }
 
+  logger.detail('Checking for package scripts');
   for (final package in config.packages) {
     final packageDirectory = Directory(package);
 
