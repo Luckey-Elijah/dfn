@@ -1,6 +1,9 @@
 # `dfn`: Dart as Functions + Scripting
 
-**Install**: `dart pub global activate`
+**Install via**: 
+- pub.dev: `dart pub global activate dfn`
+- local development: `dart pub global activate -spath .`
+- git repo: `dart pub global activate -sgit https://github.com/Luckey-Elijah/dfn.git`
 
 ## Usage
 
