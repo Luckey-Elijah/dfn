@@ -70,6 +70,7 @@ Stream<File> lsScriptFiles({
       onInvalidPath(path);
       continue;
     }
+    logger.detail('found standalone script: ${file.absolute.path}');
 
     yield file;
   }
@@ -89,12 +90,18 @@ Stream<File> lsScriptFiles({
       onInvalidPath(scriptsDirectory.path);
       continue;
     }
+    logger.detail('found scripts directory: ${scriptsDirectory.absolute.path}');
 
-    yield* scriptsDirectory
+    await for (final file in scriptsDirectory
         .list()
         .where((entity) => entity is File)
         .cast<File>()
         .where((file) => file.absolute.path.endsWith('.dart'))
-        .where((file) => !split(file.absolute.path).last.startsWith('_'));
+        .where((file) => !split(file.absolute.path).last.startsWith('_'))) {
+      logger.detail(
+        'found script registered in "script" path: ${file.absolute.path}',
+      );
+      yield file;
+    }
   }
 }

@@ -37,7 +37,7 @@ class ConfigAddCommand extends Command<int> {
     }
 
     for (final arg in args) {
-      final path = normalize(arg);
+      final path = canonicalize(normalize(arg));
       final pathType = FileSystemEntity.typeSync(path);
       final (configFile, config) = await getConfig(logger);
       if (pathType == FileSystemEntityType.file) {
