@@ -18,33 +18,38 @@ class ListCommand extends Command<int> {
   String get name => 'list';
 
   @override
+  List<String> get aliases => ['ls'];
+
+  @override
   Future<int> run() async {
     final progress = logger.progress('Reading register scripts');
+
     final (_, config) = await getConfig();
+
     final files = await lsScriptFiles(
       config: config,
       onInvalidPath: (path) => logger.err('Failed finding script(s) at $path'),
     ).toList();
 
     if (files.isEmpty) {
-      final example = styleBold.wrap('dfn config add <script or path>');
-      progress
-          .fail('No scripts registered.\nRegister a new script with $example');
-      return ExitCode.success.code;
-    } else {
-      final s = files.length > 1 ? 's' : '';
-      progress.complete('${files.length} script$s found:');
+      throw UsageException(
+        'No scripts are registered.',
+        'dfn config add <script|path>',
+      );
+    }
 
-      for (final file in files) {
-        final name = styleBold.wrap(
-          split(file.absolute.path).last.replaceAll('.dart', ''),
-        );
-        final path = link(
-          uri: Uri.file(file.absolute.path),
-          message: file.absolute.path,
-        );
-        logger.detail('  - $name -> $path');
-      }
+    final s = files.length > 1 ? 's' : '';
+    progress.complete('${files.length} script$s found:');
+
+    for (final file in files) {
+      final name = styleBold.wrap(
+        split(file.absolute.path).last.replaceAll('.dart', ''),
+      );
+      final path = link(
+        uri: Uri.file(file.absolute.path),
+        message: file.absolute.path,
+      );
+      logger.info('  - $name -> $path');
     }
 
     return ExitCode.success.code;

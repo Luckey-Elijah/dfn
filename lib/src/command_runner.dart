@@ -20,6 +20,12 @@ class DfnCommandRunner extends CommandRunner<int> {
   }) : super(executableName, description) {
     addCommand(ConfigCommand(logger: logger));
     addCommand(ListCommand(logger: logger));
+    argParser.addFlag(
+      'verbose',
+      callback: (verbose) => verbose ? logger.level = Level.verbose : null,
+      help: 'Enable verbose logging.',
+      negatable: false,
+    );
   }
 
   @override
@@ -31,21 +37,33 @@ class DfnCommandRunner extends CommandRunner<int> {
   Future<int> run(Iterable<String> args) async {
     try {
       final topLevelResults = parse(args);
-      final possibleScriptName = topLevelResults.arguments.firstOrNull;
+      final targetName = topLevelResults.arguments.firstOrNull;
 
-      if (topLevelResults.command == null &&
-          possibleScriptName != null &&
-          !possibleScriptName.startsWith('-') &&
-          !possibleScriptName.startsWith('_')) {
+      final hasCommand = topLevelResults.command != null;
+      final hasTargetName = targetName != null;
+
+      // handle recursion
+      if (targetName == 'dfn' ||
+          targetName == ':dfn' ||
+          targetName == 'dfn:dfn') {
+        throw UsageException('Do not call "dfn" with "dfn".', 'dfn <script>');
+      }
+
+      if (hasCommand || topLevelResults.wasParsed('help')) {
+        return await runCommand(topLevelResults) ?? ExitCode.success.code;
+      }
+
+      if (hasTargetName) {
         final (_, config) = await getConfig();
 
-        return tryHandleScript(
-          scriptName: possibleScriptName,
+        return handleTarget(
+          target: targetName,
           config: config,
           args: topLevelResults.rest,
           logger: logger,
         );
       }
+
       return await runCommand(topLevelResults) ?? ExitCode.success.code;
     } on FormatException catch (e, stackTrace) {
       logger
@@ -63,39 +81,35 @@ class DfnCommandRunner extends CommandRunner<int> {
     } catch (e, stackTrace) {
       logger
         ..err('$e')
-        ..err('$stackTrace')
-        ..info('');
+        ..err('$stackTrace');
       return ExitCode.software.code;
     }
   }
 }
 
-Future<int> tryHandleScript({
-  required String scriptName,
+Future<int> handleTarget({
+  required String target,
   required DfnConfig config,
   required List<String> args,
   required Logger logger,
 }) async {
-  if (!config.hasScripts) {
-    logger.err('No registered scripts.');
-    return 127;
+  Future<int> dartRun(String target, List<String> args) async {
+    final process = Process.start(
+      'dart',
+      ['run', target, ...args],
+      mode: ProcessStartMode.inheritStdio,
+    );
+    return (await process).exitCode;
   }
 
   Future<int> runScript(File file) async {
-    final results = await Process.start(
-      'dart',
-      [file.absolute.path, ...args],
-      mode: ProcessStartMode.inheritStdio,
-    );
-    return results.exitCode;
+    return dartRun(file.absolute.path, args);
   }
 
   for (final path in config.standalone) {
     final file = File(path);
     final fileName = split(file.absolute.path).last;
-    if (fileName == scriptName ||
-        fileName.replaceAll('.dart', '') == scriptName) {
-      // has match!
+    if (fileName == target || fileName.replaceAll('.dart', '') == target) {
       return runScript(file);
     }
   }
@@ -109,20 +123,24 @@ Future<int> tryHandleScript({
         .where((file) => file.absolute.path.endsWith('.dart'))
         .where((file) => !split(file.absolute.path).last.startsWith('_'))) {
       final fileName = split(file.absolute.path).last;
-      if (fileName == scriptName ||
-          fileName.replaceAll('.dart', '') == scriptName) {
+      if (fileName == target || fileName.replaceAll('.dart', '') == target) {
         return runScript(file);
       }
     }
   }
 
-  logger.err('${styleBold.wrap(scriptName)} not found in registered scripts.');
-  return 127;
+  return dartRun(target, args);
 }
 
+String? home =
+    Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
+
 Future<(File, DfnConfig)> getConfig() async {
-  final home = Platform.environment['HOME'];
-  final configFile = File('$home/.dfn');
+  if (!Directory(normalize('$home')).existsSync()) {
+    throw FileSystemException('User home path does not exist.', '$home');
+  }
+
+  final configFile = File(join('$home', '.dfn'));
   if (!configFile.existsSync()) {
     // initialize the default config
     final empty = DfnConfig.empty(configFile);

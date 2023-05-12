@@ -23,14 +23,17 @@ class ConfigAddCommand extends Command<int> {
   Future<int> run() async {
     final results = argResults;
     if (results == null) {
-      logger.err('Unexpected: results are null');
-      return ExitCode.software.code;
+      throw FormatException(
+        'Unexpected: results are null.',
+        StackTrace.current,
+      );
     }
     final args = results.arguments;
     if (args.isEmpty) {
-      final example = styleBold.wrap('dfn config add <script-path>');
-      logger.err('Please specify a path: $example');
-      return ExitCode.usage.code;
+      throw UsageException(
+        'Please specify a script or path.',
+        'dfn config add <script|path>',
+      );
     }
 
     for (final arg in args) {
@@ -40,12 +43,16 @@ class ConfigAddCommand extends Command<int> {
       if (pathType == FileSystemEntityType.file) {
         final file = File(path);
         if (!file.existsSync()) {
-          logger.err('$path does not exist');
-          return 127;
+          throw UsageException(
+            '$path does not exist.',
+            'dfn config add <script|path>',
+          );
         }
         if (config.standalone.contains(file.absolute.path)) {
-          logger.warn('$path is already registered.');
-          return ExitCode.usage.code;
+          throw UsageException(
+            '$path is already registered.',
+            'dfn config add <script|path>',
+          );
         }
         final newConfig = DfnConfig(
           packages: config.packages,
@@ -64,19 +71,25 @@ class ConfigAddCommand extends Command<int> {
         final directory = Directory(path);
 
         if (!directory.existsSync()) {
-          logger.err('$path does not exist');
-          return 127;
+          throw UsageException(
+            '$path does not exist.',
+            'dfn config add <script|path>',
+          );
         }
 
         if (config.packages.contains(directory.absolute.path)) {
-          logger.warn('$path is already registered.');
-          return ExitCode.usage.code;
+          throw UsageException(
+            '$path is already registered.',
+            'dfn config add <script|path>',
+          );
         }
 
         final scriptsDir = Directory(join(directory.absolute.path, 'scripts'));
         if (!scriptsDir.existsSync()) {
-          logger.err('$path does not contain subfolder "scripts"');
-          return 127;
+          throw UsageException(
+            '$path does not contain "script" sub folder.',
+            'dfn config add <script|path>',
+          );
         }
 
         final newScripts = await scriptsDir
@@ -105,14 +118,16 @@ class ConfigAddCommand extends Command<int> {
           final path = script.absolute.path;
           final name = styleBold.wrap(split(path).last.replaceAll('.dart', ''));
           final source = link(uri: Uri.file(path), message: path);
-          logger.detail('  - $name -> $source');
+          logger.info('  - $name -> $source');
         }
 
         return ExitCode.success.code;
       }
     }
 
-    logger.err('path(s) does not exist: ${args.join(', ')}');
-    return 127;
+    throw UsageException(
+      'path(s) does not exist: ${args.join(', ')}',
+      'dfn config add <script|path>',
+    );
   }
 }
