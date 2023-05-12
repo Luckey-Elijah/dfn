@@ -4,6 +4,8 @@
         "canonicalize",
         "endtemplate",
         "pubspec",
+        "sgit",
+        "spath",
         "TLDR",
         "writeln"
     ]
