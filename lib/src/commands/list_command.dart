@@ -39,7 +39,7 @@ class ListCommand extends Command<int> {
     }
 
     final s = files.length > 1 ? 's' : '';
-    progress.complete('${files.length} script$s found:');
+    progress.complete('${files.length} script$s available:');
 
     for (final file in files) {
       final name = styleBold.wrap(

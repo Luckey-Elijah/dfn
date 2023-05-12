@@ -50,11 +50,11 @@ Any _new_ `.dart` files added to `path/to/my/example/dfn` will **automatically**
 For example:
 ```sh
 $ dfn config add scripts path/to/my/example
-dfn found 4 scripts in path/to/my/example/dfn
-- upgrade_all_pub
-- search_folder
-- watch_files
-- check_code_health
+Registered 1 new script from path/to/my/example/scripts
+  - upgrade_all_pub -> /full/path/to/my/example/scripts/upgrade_all_pub.dart
+  - search_folder -> /full/path/to/my/example/scripts/search_folder.dart
+  - watch_files -> /full/path/to/my/example/scripts/watch_files.dart
+  - check_code_health -> /full/path/to/my/example/scripts/check_code_health.dart
 
 # create new script
 $ touch path/to/my/example/dfn/hello.dart

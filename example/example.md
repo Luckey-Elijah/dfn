@@ -27,7 +27,7 @@
 
     ```sh
     $ dfn list
-    ✓ 2 scripts found:
+    ✓ 2 scripts available:
       - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
       - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
     ```
@@ -53,6 +53,6 @@
     Removed: /path/to/example
 
     $ dfn list
-    ✓ 1 script found:
+    ✓ 1 script available:
       - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
     ```
