@@ -19,6 +19,9 @@ class ConfigRemoveCommand extends Command<int> {
   String get name => 'remove';
 
   @override
+  List<String> get aliases => ['rm'];
+
+  @override
   Future<int> run() async {
     final results = argResults;
     if (results == null) {
@@ -28,9 +31,10 @@ class ConfigRemoveCommand extends Command<int> {
 
     final args = results.arguments;
     if (args.isEmpty) {
-      final example = styleBold.wrap('dfn config remove <script or path>');
-      logger.err('Please specify a script or path: $example');
-      return ExitCode.usage.code;
+      throw UsageException(
+        'Please specify a script or path.',
+        'dfn config remove <script|path>',
+      );
     }
 
     final (configFile, config) = await getConfig();
@@ -80,7 +84,9 @@ class ConfigRemoveCommand extends Command<int> {
       return ExitCode.success.code;
     }
 
-    logger.err('Could not remove ${args.map(styleBold.wrap).join(', ')}');
-    return ExitCode.usage.code;
+    throw UsageException(
+      'Could not remove ${args.join(', ')}.',
+      'dfn config remove <script|path>',
+    );
   }
 }
