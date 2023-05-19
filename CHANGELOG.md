@@ -1,3 +1,10 @@
+# 0.1.0
+
+- Improve documentation
+- Marks "usages" as `final` and not as functions.
+- Various code quality improvements
+
+
 # 0.0.3
 
 - `README.md` formatting
