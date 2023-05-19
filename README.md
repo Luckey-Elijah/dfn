@@ -8,12 +8,12 @@
 ## Usage
 
 Overview:
-| `dfn <command>`                   |                                                     |
+| `dfn <command>`                   | description                                         |
 | --------------------------------- | --------------------------------------------------- |
 | `dfn`                             | core tool                                           |
 | `dfn <script>`                    | run a registered script                             |
 | `dfn <args>`                      | forward args to `dart run` (tries *scripts* first)  |
-| `dfn config`                      | for managing scripts (see `add`/`rm`)                                |
+| `dfn config`                      | for managing scripts (see `add`/`rm`)               |
 | `dfn config add <script/path>`    | for registering scripts                             |
 | `dfn config remove <script/path>` | for un-registering scripts (alias `dfn config rm`)  |
 | `dfn list`                        | for showing all registered scripts (alias `dfn ls`) |
