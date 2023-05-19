@@ -35,7 +35,7 @@ There are no registered scripts; use:
 
   for (final file in files) {
     if (file.$2 == RegisterSource.path) {
-      final p = canonicalize(file.$1.absolute.parent.parent.path);
+      final p = canonicalize(file.$1.absolute.parent.path);
       final name = bold(
         split(file.$1.absolute.path).last.replaceAll('.dart', ''),
       );

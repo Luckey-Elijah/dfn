@@ -1,58 +1,43 @@
 # Example
 
-1. list any registered scripts
+### Example:
 
-    ```sh
-    $ dfn list
-    ✗ No scripts registered.
-    Register a new script with dfn config add <script or path>
-    ```
-
-2. add a single, standalone script
-
-    ```sh
-    $ dfn config add example/hello_from_standalone.dart
-    Registered hello_from_standalone
-    ```
-
-3. add a an entire folder that contains `dfn` subfolder
-
-    ```sh
-    $ dfn config add example
-    Registered 1 new script from /path/to/example/scripts
+1. Register script(s):
+  ```sh
+  $ dfn config add example # via "package" with a "scripts" directory
+  Registered 1 new script from /path/to/example/scripts
     - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
-    ```
 
-4. list newly registered scripts
+  $ dfn config add example/hello_from_standalone.dart 
+  Registered hello_from_standalone
+  ```
 
-    ```sh
-    $ dfn list
-    ✓ 2 scripts available:
-      - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
-      - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
-    ```
+2. List all scripts:
+  ```sh
+  $ dfn list
+  ✓ 2 scripts available:
+    - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
+    - hello_from_folder -> /path/to/example/scripts
+  ```
 
-5. run `hello_from_standalone`
+3. Run the scripts:
+  ```sh
+  $ dfn hello_from_standalone
+  Hello from standalone file!
+  
+  $ dfn hello_from_folder
+  Hello from script folder!
+  ```
 
-    ```sh
-    $ dfn hello_from_standalone
-    Hello from standalone folder!
-    ```
+4. Remove the scripts:
+  ```sh
+  $ dfn config rm hello_from_standalone # rm or remove are both valid
+  Removed: /path/to/example/hello_from_standalone.dart
+  $ dfn config remove example # need to pass the directory for "packages"
+  Removed: /path/to/example
+  ```
 
-6. run `hello_from_folder`
-
-    ```sh
-    $ dfn hello_from_folder
-    Hello from script folder!
-    ```
-
-6. remove `example` scripts
-
-    ```sh
-    $ dfn config remove example
-    Removed: /path/to/example
-
-    $ dfn list
-    ✓ 1 script available:
-      - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
-    ```
+5. Forward args to `dart run`:
+  ```sh
+  $ dfn test:test test/some_test.dart
+  ```

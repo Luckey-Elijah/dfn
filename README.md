@@ -11,9 +11,9 @@ Overview:
 | `dfn <command>`                   |                                                     |
 | --------------------------------- | --------------------------------------------------- |
 | `dfn`                             | core tool                                           |
-| `dfn <script>`                    | run a register script                               |
+| `dfn <script>`                    | run a registered script                             |
 | `dfn <args>`                      | forward args to `dart run` (tries *scripts* first)  |
-| `dfn config`                      | for managing scripts                                |
+| `dfn config`                      | for managing scripts (see `add`/`rm`)                                |
 | `dfn config add <script/path>`    | for registering scripts                             |
 | `dfn config remove <script/path>` | for un-registering scripts (alias `dfn config rm`)  |
 | `dfn list`                        | for showing all registered scripts (alias `dfn ls`) |
@@ -24,8 +24,9 @@ Overview:
 1. Register script(s):
   ```sh
   $ dfn config add example # via "package" with a "scripts" directory
-  Registered 1 new script from /Users/elijahluckey/Development/dfn/example/scripts
-    - hello_from_folder -> /Users/elijahluckey/Development/dfn/example/scripts/hello_from_folder.dart
+  Registered 1 new script from /path/to/example/scripts
+    - hello_from_folder -> /path/to/example/scripts/hello_from_folder.dart
+
   $ dfn config add example/hello_from_standalone.dart 
   Registered hello_from_standalone
   ```
@@ -33,9 +34,9 @@ Overview:
 2. List all scripts:
   ```sh
   $ dfn list
-  ✓ 2 scripts available: (61ms)
-    - hello_from_standalone -> /Users/elijahluckey/Development/dfn/example/hello_from_standalone.dart
-    - hello_from_folder -> /Users/elijahluckey/Development/dfn/example/scripts/hello_from_folder.dart
+  ✓ 2 scripts available:
+    - hello_from_standalone -> /path/to/example/hello_from_standalone.dart
+    - hello_from_folder -> /path/to/example/scripts
   ```
 
 3. Run the scripts:
@@ -50,16 +51,12 @@ Overview:
 4. Remove the scripts:
   ```sh
   $ dfn config rm hello_from_standalone # rm or remove are both valid
-  Removed: /Users/elijahluckey/Development/dfn/example/hello_from_standalone.dart
+  Removed: /path/to/example/hello_from_standalone.dart
   $ dfn config remove example # need to pass the directory for "packages"
-  Removed: /Users/elijahluckey/Development/dfn/example
+  Removed: /path/to/example
   ```
 
 5. Forward args to `dart run`:
   ```sh
-  $ dfn dfn:example_script
-  Building package executable... 
-  Built dfn:example_script.
-  Hello from dart!
-  args: [dfn:example_script]
+  $ dfn test:test test/some_test.dart
   ```
