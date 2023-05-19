@@ -4,9 +4,10 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
+/// Handler for `dfn config add` command.
 Future<int> handleAdd(List<String> arguments, Logger logger) async {
   if (arguments.isEmpty) {
-    logger.info(dfnConfigAddUsage());
+    logger.info(dfnConfigAddUsage);
     return ExitCode.usage.code;
   }
 
@@ -98,11 +99,22 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
       return ExitCode.success.code;
     }
   }
-  logger.info(dfnConfigAddUsage());
+  logger.info(dfnConfigAddUsage);
   return ExitCode.usage.code;
 }
 
-String dfnConfigAddUsage() => '''
+/// Usage information of `dfn config add` command:
+/// ```text
+/// Usage: dfn config add <script|path>
+///
+/// Possible arguments:
+///   script          .dart file with a top-level `main` function.
+///   path            Path to directory with a scripts subfolder
+///                   which holds .dart files. Dart files should meet
+///                   requirement of scripts. Files that start with _
+///                   (underscore) are excluded.
+/// ```
+final dfnConfigAddUsage = '''
 Usage: ${green.wrap(bold('dfn config add'))} ${italic('<script|path>')}
 
 Possible ${italic('arguments')}:

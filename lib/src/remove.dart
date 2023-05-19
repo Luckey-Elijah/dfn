@@ -4,9 +4,10 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
+/// Handler for `dfn config remove` or `dfn config rm` command.
 Future<int> handleRemove(List<String> arguments, Logger logger) async {
   if (arguments.isEmpty) {
-    logger.info(dfnConfigRemoveUsage());
+    logger.info(dfnConfigRemoveUsage);
     return ExitCode.usage.code;
   }
 
@@ -64,7 +65,16 @@ ${bold('dfn config remove <script|path>')}''',
   return ExitCode.usage.code;
 }
 
-String dfnConfigRemoveUsage() => '''
+/// Usage for `dfn config remove` or `dfn config rm` command.
+/// ```text
+/// Usage: dfn config remove <script|path>
+///
+/// Possible arguments:
+///   script          Unregister a script you have that has been registered.
+///   path            Path to directory with a scripts subfolder
+///                   which holds your registered .dart files.
+/// ```
+final dfnConfigRemoveUsage = '''
 Usage: ${green.wrap(bold('dfn config remove'))} ${italic('<script|path>')}
 
 Possible ${italic('arguments')}:

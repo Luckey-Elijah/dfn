@@ -4,6 +4,11 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
+/// Handler for `dfn <target|script>`.
+/// Execute a script/command file from in this order:
+/// - a config standalone script
+/// - a config package script
+/// - forward everything the `dart run`
 Future<int> handleTarget({
   required String target,
   required DfnConfig config,

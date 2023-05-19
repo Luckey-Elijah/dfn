@@ -5,25 +5,42 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
+/// Handler for `dfn config` command.
 Future<int> handleConfig(List<String> arguments, Logger logger) async {
   if (arguments.isEmpty) {
-    logger.info(dfnConfigUsage());
+    logger.info(dfnConfigUsage);
     return ExitCode.usage.code;
   }
 
-  if (arguments.first == 'add') {
-    return handleAdd(arguments.rest, logger);
-  }
+  final handlers = <String, Handler>{
+    'add': handleAdd,
+    'list': handleList,
+    'ls': handleList,
+    'remove': handleRemove,
+    'rm': handleRemove
+  };
 
-  if (arguments.first == 'remove' || arguments.first == 'rm') {
-    return handleRemove(arguments.rest, logger);
-  }
+  final handler = handlers[arguments.first] ?? _defaultHandler;
+  return handler(arguments.rest, logger);
+}
 
-  logger.info(dfnConfigUsage());
+int _defaultHandler(List<String> arguments, Logger logger) {
+  logger
+    ..warn('could not handler: dfn config ${arguments.join(' ')}')
+    ..info(dfnConfigUsage);
   return ExitCode.usage.code;
 }
 
-String dfnConfigUsage() => '''
+/// Usage for `dfn config` command:
+/// ```text
+/// Usage: dfn config <command> [arguments]
+///
+/// Available commands:
+///   add             Add register/add scripts.
+///   remove (rm)     Remove/un-register scripts.
+///   list (ls)       show all registered/added scripts.
+/// ```
+final dfnConfigUsage = '''
 Usage: ${green.wrap(bold('dfn config'))} ${italic('<command> [arguments]')}
 
 Available commands:
@@ -31,9 +48,12 @@ Available commands:
   ${lightGreen.wrap('remove (rm)'.fit)}Remove/un-register scripts.
   ${lightGreen.wrap('list (ls)'.fit)}show all registered/added scripts.
 ''';
-String? home =
-    Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 
+/// Path to the user's "home" directory.
+final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
+
+/// Retrieve the `dfn` configuration.
+/// Will create the configuration if it does not exist.
 Future<(File, DfnConfig)> getConfig(Logger logger) async {
   logger.detail('Checking for if home path exists: $home.');
 
@@ -59,6 +79,8 @@ Future<(File, DfnConfig)> getConfig(Logger logger) async {
   return (configFile, config);
 }
 
+/// Write to the `dfn` configuration file.
+/// Will create the configuration if it does not exist.
 Future<(File, DfnConfig)> writeConfig(
   DfnConfig config,
   File source,
@@ -73,7 +95,11 @@ Future<(File, DfnConfig)> writeConfig(
   return (source, config);
 }
 
+/// {@template dfn_config}
+/// Dart representation of the `.dfn` file.
+/// {@endtemplate}
 class DfnConfig {
+  /// {@macro dfn_config}
   const DfnConfig({
     required this.packages,
     required this.standalone,
@@ -81,6 +107,8 @@ class DfnConfig {
     required this.source,
   });
 
+  /// An "empty" representation of the file.
+  /// {@macro dfn_config}
   DfnConfig.empty(File source)
       : this(
           packages: [],
@@ -89,6 +117,8 @@ class DfnConfig {
           source: source,
         );
 
+  /// Create a [DfnConfig] from Map and target/source file.
+  /// {@macro dfn_config}
   factory DfnConfig.fromMap(Map<String, dynamic> map, File source) {
     return DfnConfig(
       source: source,
@@ -98,19 +128,32 @@ class DfnConfig {
     );
   }
 
+  /// Create a [DfnConfig] from JSON String.
+  /// {@macro dfn_config}
   factory DfnConfig.fromJson(String contents, File source) => DfnConfig.fromMap(
         json.decode(contents) as Map<String, dynamic>,
         source,
       );
+
+  /// Most recent version of the schema.
   static const currentVersion = 1;
 
+  /// Paths to package directories that are registered.
   final List<String> packages;
+
+  /// Paths to scripts that are registered.
   final List<String> standalone;
+
+  /// Version of this schema.
   final int version;
+
+  /// Location of this config.
   final File source;
 
+  /// Whether any package or standalone scripts exist.
   bool get hasScripts => packages.isNotEmpty || standalone.isNotEmpty;
 
+  /// Converts this config into JSON-like map.
   Map<String, dynamic> toMap() => {
         'packages': packages,
         'standalone': standalone,
@@ -118,12 +161,13 @@ class DfnConfig {
       };
 }
 
+/// "Pretty" printer for json. **Only use this for logging.**
 String jsonPretty(Map<Object?, Object?> json) {
   final buffer = StringBuffer();
 
   for (final MapEntry(:key, :value) in json.entries) {
     buffer
-      ..write(bold('$key'))
+      ..write(bold('$key: '))
       ..writeln(value is Map ? jsonPretty(value) : value);
   }
 

@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 
+/// Entry point for `dfn` command.
 Future<int> run(List<String> arguments, Logger logger) async {
   if (arguments.isEmpty) {
-    logger.info(dfnUsage());
+    logger.info(dfnUsage);
     return ExitCode.usage.code;
   }
 
@@ -15,24 +16,25 @@ Future<int> run(List<String> arguments, Logger logger) async {
   }
 
   if (arguments.isEmpty) {
-    logger.info(dfnUsage());
+    logger.info(dfnUsage);
     return ExitCode.usage.code;
   }
 
-  int help() => handleHelp(logger);
-  Future<int> list() => handleList(arguments.rest, logger);
-  Future<int> config() => handleConfig(arguments.rest, logger);
-  final handler = <String, FutureOr<int> Function()>{
-    '--help': help,
-    '-h': help,
-    'list': list,
-    'ls': list,
-    'config': config,
-  }[arguments.first];
+  final handlers = <String, Handler>{
+    '--help': handleHelp,
+    '-h': handleHelp,
+    'list': handleList,
+    'ls': handleList,
+    'config': handleConfig,
+  };
 
-  if (handler != null) return handler();
+  final handler = handlers[arguments.first] ?? _handleTarget;
+  return handler(arguments.rest, logger);
+}
 
+Future<int> _handleTarget(List<String> arguments, Logger logger) async {
   final (_, configuration) = await getConfig(logger);
+
   return handleTarget(
     target: arguments.first,
     config: configuration,

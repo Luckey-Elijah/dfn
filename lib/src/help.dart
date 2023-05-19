@@ -1,12 +1,28 @@
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 
-int handleHelp(Logger logger) {
-  logger.info(dfnUsage());
+/// Handler for the `dfn -help` or `dfn -h` option.
+int handleHelp(List<String> arguments, Logger logger) {
+  if (arguments.isNotEmpty) logger.info('--help, -h does not take arguments');
+  logger.info(dfnUsage);
   return ExitCode.success.code;
 }
 
-String dfnUsage() => '''
+/// `dfn -h` or `dfn --help` output:
+/// ```text
+/// Use Dart as your scripting language; register scripts from anywhere.
+///
+/// Usage: dfn <command> [arguments]
+///
+/// Available commands:
+///   config          Add, remove, and manage scripts.
+///   list, ls        Show all registered/added scripts.
+///
+/// Options (must be first argument provided):
+///   --help, -h      Print this usage information.
+///   --verbose, -v   Enable verbose logging.
+/// ```
+final dfnUsage = '''
 ${italic('Use Dart as your scripting language; register scripts from anywhere.')}
 
 Usage: ${green.wrap(bold('dfn'))} ${italic('<command> [arguments]')}

@@ -4,8 +4,20 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
-enum RegisterSource { script, path }
+/// {@template register_source}
+/// The type of register script.
+/// {@endtemplate}
+enum RegisterSource {
+  /// Registered as path to a script.
+  /// {@macro register_source}
+  script,
 
+  /// Registered as path to a directory.
+  /// {@macro register_source}
+  path;
+}
+
+/// Handler for `dfn ls`, `dfn list` command.
 Future<int> handleList(List<String> arguments, Logger logger) async {
   final progress = logger.progress('Reading register scripts');
 
@@ -52,6 +64,7 @@ There are no registered scripts; use:
   return ExitCode.success.code;
 }
 
+/// Emits all registered scripts in [config].
 Stream<(File, RegisterSource)> lsScriptFiles({
   required DfnConfig config,
   required void Function(String) onInvalidPath,
