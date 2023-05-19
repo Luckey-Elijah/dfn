@@ -28,7 +28,8 @@ Future<int> run(List<String> arguments, Logger logger) async {
     'config': handleConfig,
   };
 
-  final handler = handlers[arguments.first] ?? _handleTarget;
+  final handler = handlers[arguments.first];
+  if (handler == null) return _handleTarget(arguments, logger);
   return handler(arguments.rest, logger);
 }
 
