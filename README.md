@@ -52,6 +52,7 @@ Overview:
   ```sh
   $ dfn config rm hello_from_standalone # rm or remove are both valid
   Removed: /path/to/example/hello_from_standalone.dart
+
   $ dfn config remove example # need to pass the directory for "packages"
   Removed: /path/to/example
   ```
