@@ -3,7 +3,7 @@ import 'package:mason_logger/mason_logger.dart';
 
 /// Handler for the `dfn -help` or `dfn -h` option.
 int handleHelp(List<String> arguments, Logger logger) {
-  if (arguments.isNotEmpty) logger.info('--help, -h does not take arguments');
+  checkVerbose(arguments, logger);
   logger.info(dfnUsage);
   return ExitCode.success.code;
 }

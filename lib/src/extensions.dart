@@ -12,14 +12,6 @@ final bold = styleBold.wrap;
 /// italic.
 final italic = styleItalic.wrap;
 
-/// {@template rest}
-/// Retrieve all but the "first" of a list of arguments.
-/// {@endtemplate}
-extension Rest on List<String> {
-  /// {@macro rest}
-  List<String> get rest => sublist(1);
-}
-
 /// {@template fit}
 /// Helper to fit command usage string.
 /// {@endtemplate}
@@ -30,3 +22,12 @@ extension Fit on String {
 
 /// Function for handling commands.
 typedef Handler = FutureOr<int> Function(List<String> arguments, Logger logger);
+
+/// Check if `--verbose` is the first argument and then sets
+/// the logger to verbose mode.
+void checkVerbose(List<String> arguments, Logger logger) {
+  if (arguments.first == '--verbose') {
+    logger.level = Level.verbose;
+    arguments.remove('--verbose');
+  }
+}

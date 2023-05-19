@@ -11,6 +11,8 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
     return ExitCode.usage.code;
   }
 
+  checkVerbose(arguments, logger);
+
   final (configFile, config) = await getConfig(logger);
   final newStandalone = <String>[];
   final newPackages = <String>[];

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
 /// {@template register_source}
 /// The type of register script.
@@ -19,11 +19,13 @@ enum RegisterSource {
 
 /// Handler for `dfn ls`, `dfn list` command.
 Future<int> handleList(List<String> arguments, Logger logger) async {
+  checkVerbose(arguments, logger);
+
   final progress = logger.progress('Reading register scripts');
 
   final (_, config) = await getConfig(logger);
 
-  final files = await lsScriptFiles(
+  final results = await lsScriptFiles(
     config: config,
     onInvalidPath: (path) => logger.alert(
       'Failed finding script(s) at $path',
@@ -31,7 +33,7 @@ Future<int> handleList(List<String> arguments, Logger logger) async {
     logger: logger,
   ).toList();
 
-  if (files.isEmpty) {
+  if (results.isEmpty) {
     logger.warn(
       '''
 There are no registered scripts; use:
@@ -42,22 +44,22 @@ There are no registered scripts; use:
     return ExitCode.usage.code;
   }
 
-  final s = files.length > 1 ? 's' : '';
-  progress.complete('${files.length} script$s available:');
+  final s = results.length > 1 ? 's' : '';
+  progress.complete('${results.length} script$s available:');
 
-  for (final file in files) {
-    if (file.$2 == RegisterSource.path) {
-      final p = canonicalize(file.$1.absolute.parent.path);
+  for (final result in results) {
+    if (result.type == RegisterSource.path) {
+      final path = p.canonicalize(result.file.absolute.parent.path);
       final name = bold(
-        split(file.$1.absolute.path).last.replaceAll('.dart', ''),
+        p.split(result.file.absolute.path).last.replaceAll('.dart', ''),
       );
-      final path = link(uri: Uri.file(p), message: p);
-      logger.info('  - $name -> $path');
+      final pathLabel = link(uri: Uri.file(path), message: path);
+      logger.info('  - $name -> $pathLabel');
     } else {
-      final p = canonicalize(file.$1.absolute.path);
-      final name = bold(split(p).last.replaceAll('.dart', ''));
-      final path = link(uri: Uri.file(p), message: p);
-      logger.info('  - $name -> $path');
+      final path = p.canonicalize(result.file.absolute.path);
+      final name = bold(p.split(path).last.replaceAll('.dart', ''));
+      final pathLabel = link(uri: Uri.file(path), message: path);
+      logger.info('  - $name -> $pathLabel');
     }
   }
 
@@ -65,14 +67,14 @@ There are no registered scripts; use:
 }
 
 /// Emits all registered scripts in [config].
-Stream<(File, RegisterSource)> lsScriptFiles({
+Stream<({File file, RegisterSource type})> lsScriptFiles({
   required DfnConfig config,
   required void Function(String) onInvalidPath,
   required Logger logger,
 }) async* {
   logger.detail('Checking for standalone scripts');
   for (final path in config.standalone) {
-    final file = File(canonicalize(path));
+    final file = File(path);
 
     if (!file.existsSync()) {
       onInvalidPath(path);
@@ -80,7 +82,7 @@ Stream<(File, RegisterSource)> lsScriptFiles({
     }
     logger.detail('found standalone script: ${file.absolute.path}');
 
-    yield (file, RegisterSource.script);
+    yield (file: file, type: RegisterSource.script);
   }
 
   logger.detail('Checking for package scripts');
@@ -93,7 +95,7 @@ Stream<(File, RegisterSource)> lsScriptFiles({
     }
 
     final scriptsDirectory =
-        Directory(canonicalize(join(packageDirectory.path, 'scripts')));
+        Directory(p.canonicalize(p.join(packageDirectory.path, 'scripts')));
 
     if (!scriptsDirectory.existsSync()) {
       onInvalidPath(scriptsDirectory.path);
@@ -106,12 +108,12 @@ Stream<(File, RegisterSource)> lsScriptFiles({
         .list()
         .where((entity) => entity is File)
         .cast<File>()
-        .where((file) => file.absolute.path.endsWith('.dart'))
-        .where((file) => !split(file.absolute.path).last.startsWith('_'))) {
+        .where((file) => file.absolute.path.toLowerCase().endsWith('.dart'))
+        .where((file) => !p.split(file.absolute.path).last.startsWith('_'))) {
       logger.detail(
         'found script registered in "script" path: ${file.absolute.path}',
       );
-      yield (file, RegisterSource.path);
+      yield (file: file, type: RegisterSource.path);
     }
   }
 }
