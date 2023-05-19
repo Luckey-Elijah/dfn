@@ -1,5 +1,5 @@
 name: dfn
-version: 0.0.2
+version: 0.0.3
 repository: https://github.com/Luckey-Elijah/dfn
 description: Use Dart as your scripting language, and register scripts from anywhere.
 

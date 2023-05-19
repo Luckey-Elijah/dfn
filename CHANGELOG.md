@@ -1,3 +1,7 @@
+# 0.0.3
+
+- `README.md` formatting
+
 # 0.0.2
 
 - `README.md` formatting
