@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:dfn/src/command_runner.dart';
+import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 Future<void> main(List<String> args) async {
-  final commandRunner = DfnCommandRunner(logger: Logger());
-  return _flushThenExit(await commandRunner.run(args));
+  final logger = Logger();
+  return _flushThenExit(await run([...args], logger));
 }
 
 Future<void> _flushThenExit(int status) => [

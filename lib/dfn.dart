@@ -9,3 +9,12 @@
 /// dfn --help
 /// ```
 library dfn;
+
+export 'src/add.dart';
+export 'src/config.dart';
+export 'src/extensions.dart';
+export 'src/help.dart';
+export 'src/list.dart';
+export 'src/remove.dart';
+export 'src/run.dart';
+export 'src/target.dart';
