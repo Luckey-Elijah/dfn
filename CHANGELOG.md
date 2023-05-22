@@ -1,9 +1,21 @@
+# 0.2.0
+
+Code improvements:
+
+- removes `.then` in `dfn.dart` flush
+- moves commands to `command` directory
+- prefixes `path` imports as `p`
+- handles `--verbose` for each sub command (`checkVerbose`)
+- removes `.rest` extension -> use `.sublist(1)`
+- removes ecosystem-conflicting factory/named-constructors on `DfnConfig`
+- removes jsonPretty print in favor of encoder with indent
+- uses named parameters in record return for `lsScriptFiles` 
+
 # 0.1.0
 
 - Improve documentation
 - Marks "usages" as `final` and not as functions.
 - Various code quality improvements
-
 
 # 0.0.3
 
