@@ -13,7 +13,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
 
   checkVerbose(arguments, logger);
 
-  final (configFile, configuration) = await getConfig(logger);
+  final (configFile, configuration) = getConfig(logger);
 
   for (final argument in arguments) {
     final path = p.canonicalize(p.normalize(argument));
@@ -39,7 +39,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
         source: configFile,
         version: DfnConfig.currentVersion,
       );
-      await writeConfig(newConfig, newConfig.source, logger);
+      writeConfig(newConfig, logger);
       final scriptName =
           p.split(file.absolute.path).last.replaceAll('.dart', '');
       logger.success('Registered $scriptName');
@@ -85,7 +85,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
         version: DfnConfig.currentVersion,
       );
 
-      await writeConfig(newConfig, newConfig.source, logger);
+      writeConfig(newConfig, logger);
       final count = newScripts.length;
       final s = newScripts.length > 1 ? 's' : '';
       logger.success(

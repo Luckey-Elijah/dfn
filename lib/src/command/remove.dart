@@ -13,7 +13,7 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
 
   checkVerbose(arguments, logger);
 
-  final (configFile, config) = await getConfig(logger);
+  final (configFile, config) = getConfig(logger);
   final newStandalone = <String>[];
   final newPackages = <String>[];
 
@@ -46,14 +46,13 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
   }
 
   if (didRemove) {
-    await writeConfig(
+    writeConfig(
       DfnConfig(
         packages: newPackages,
         standalone: newStandalone,
         version: DfnConfig.currentVersion,
         source: configFile,
       ),
-      configFile,
       logger,
     );
     return ExitCode.success.code;

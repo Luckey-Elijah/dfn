@@ -12,6 +12,8 @@ Future<int> run(List<String> arguments, Logger logger) async {
     return ExitCode.usage.code;
   }
 
+  await _checkForUpdate(logger);
+
   final handlers = <String, Handler>{
     '--help': handleHelp,
     '-h': handleHelp,
@@ -26,7 +28,7 @@ Future<int> run(List<String> arguments, Logger logger) async {
 }
 
 Future<int> _handleTarget(List<String> arguments, Logger logger) async {
-  final (_, configuration) = await getConfig(logger);
+  final (_, configuration) = getConfig(logger);
 
   return handleTarget(
     target: arguments.first,
@@ -34,4 +36,14 @@ Future<int> _handleTarget(List<String> arguments, Logger logger) async {
     args: arguments.sublist(1),
     logger: logger,
   );
+}
+
+Future<void> _checkForUpdate(Logger logger) async {
+  // read dfn config
+  // if updateLastChecked is null || updateLastChecked > 48h ago
+  // - fetch version info
+  // - if available, notify user
+  // - write to dfn -> DateTime.now....utc?
+
+  throw UnimplementedError('_checkForUpdate');
 }

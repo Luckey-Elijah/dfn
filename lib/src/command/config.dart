@@ -54,7 +54,7 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 
 /// Retrieve the `dfn` configuration.
 /// Will create the configuration if it does not exist.
-Future<(File, DfnConfig)> getConfig(Logger logger) async {
+(File, DfnConfig) getConfig(Logger logger) {
   logger.detail('Checking for if home path exists: $home.');
 
   if (!Directory(p.normalize('$home')).existsSync()) {
@@ -70,11 +70,11 @@ Future<(File, DfnConfig)> getConfig(Logger logger) async {
     logger.detail('No dfn config found. Creating empty dfn config at $path.');
     // initialize the default config
     final empty = DfnConfig.empty(configFile);
-    final config = (await writeConfig(empty, configFile, logger)).$2;
+    final config = writeConfig(empty, logger);
     return (configFile, config);
   }
   logger.detail('✓ dfn config exists.');
-  final contents = await configFile.readAsString();
+  final contents = configFile.readAsStringSync();
   final config = DfnConfig.fromJsonAndFile(
     jsonDecode(contents) as Map<String, dynamic>,
     configFile,
@@ -84,18 +84,17 @@ Future<(File, DfnConfig)> getConfig(Logger logger) async {
 
 /// Write to the `dfn` configuration file.
 /// Will create the configuration if it does not exist.
-Future<(File, DfnConfig)> writeConfig(
+DfnConfig writeConfig(
   DfnConfig config,
-  File source,
   Logger logger,
-) async {
-  await source.create();
+) {
+  config.source.createSync();
   final data = config.toMap();
-  await source.writeAsString(jsonEncode(data));
+  config.source.writeAsStringSync(jsonEncode(data));
   logger
-    ..detail('Wrote to ${p.canonicalize(source.absolute.path)}: ')
+    ..detail('Wrote to ${p.canonicalize(config.source.absolute.path)}: ')
     ..detail(const JsonEncoder.withIndent('  ').convert(data));
-  return (source, config);
+  return config;
 }
 
 /// {@template dfn_config}
@@ -108,6 +107,7 @@ class DfnConfig {
     required this.standalone,
     required this.version,
     required this.source,
+    this.updateLastChecked,
   });
 
   /// An "empty" representation of the file.
@@ -118,6 +118,7 @@ class DfnConfig {
           standalone: [],
           version: currentVersion,
           source: source,
+          updateLastChecked: null,
         );
 
   /// Create a [DfnConfig] from JSON String.
@@ -125,14 +126,18 @@ class DfnConfig {
   factory DfnConfig.fromJsonAndFile(
     Map<String, dynamic> map,
     File source,
-  ) =>
-      DfnConfig(
-        source: source,
-        packages: List<String>.from(map['packages'] as List<dynamic>? ?? []),
-        standalone:
-            List<String>.from(map['standalone'] as List<dynamic>? ?? []),
-        version: int.tryParse(map['version'].toString()) ?? currentVersion,
-      );
+  ) {
+    final updateLastCheckedSrc = map['updateLastChecked'] as int?;
+    return DfnConfig(
+      updateLastChecked: updateLastCheckedSrc != null
+          ? DateTime.fromMicrosecondsSinceEpoch(updateLastCheckedSrc)
+          : null,
+      source: source,
+      packages: List<String>.from(map['packages'] as List<dynamic>? ?? []),
+      standalone: List<String>.from(map['standalone'] as List<dynamic>? ?? []),
+      version: int.tryParse(map['version'].toString()) ?? currentVersion,
+    );
+  }
 
   /// Most recent version of the schema.
   static const currentVersion = 1;
@@ -149,6 +154,9 @@ class DfnConfig {
   /// Location of this config.
   final File source;
 
+  /// That last time an update for `dfn` was checked.
+  final DateTime? updateLastChecked;
+
   /// Whether any package or standalone scripts exist.
   bool get hasScripts => packages.isNotEmpty || standalone.isNotEmpty;
 
@@ -157,5 +165,6 @@ class DfnConfig {
         'packages': packages,
         'standalone': standalone,
         'version': version,
+        'updateLastChecked': updateLastChecked,
       };
 }
