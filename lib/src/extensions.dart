@@ -26,7 +26,7 @@ typedef Handler = FutureOr<int> Function(List<String> arguments, Logger logger);
 /// Check if `--verbose` is the first argument and then sets
 /// the logger to verbose mode.
 void checkVerbose(List<String> arguments, Logger logger) {
-  if (arguments.first == '--verbose') {
+  if (arguments.isNotEmpty && arguments.first == '--verbose') {
     logger.level = Level.verbose;
     arguments.remove('--verbose');
   }
