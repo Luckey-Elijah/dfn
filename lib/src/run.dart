@@ -5,11 +5,6 @@ import 'package:mason_logger/mason_logger.dart';
 
 /// Entry point for `dfn` command.
 Future<int> run(List<String> arguments, Logger logger) async {
-  if (arguments.isEmpty) {
-    logger.info(dfnUsage);
-    return ExitCode.usage.code;
-  }
-
   checkVerbose(arguments, logger);
 
   if (arguments.isEmpty) {
