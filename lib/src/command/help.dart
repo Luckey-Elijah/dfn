@@ -2,7 +2,7 @@ import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 /// Handler for the `dfn -help` or `dfn -h` option.
-int handleHelp(List<String> arguments, Logger logger) {
+int handleHelp(List<String> arguments, Logger logger, DfnConfig _) {
   checkVerbose(arguments, logger);
   logger.info(dfnUsage);
   return ExitCode.success.code;
@@ -20,7 +20,7 @@ int handleHelp(List<String> arguments, Logger logger) {
 ///
 /// Options (must be first argument provided):
 ///   --help, -h      Print this usage information.
-///   --verbose, -v   Enable verbose logging.
+///   --verbose       Enable verbose logging.
 /// ```
 final dfnUsage = '''
 ${italic('Use Dart as your scripting language; register scripts from anywhere.')}
@@ -33,5 +33,5 @@ Available commands:
 
 Options (${italic('must be first argument provided')}):
   ${'--help, -h'.fit}Print this usage information.
-  ${'--verbose, -v'.fit}Enable verbose logging.
+  ${'--verbose'.fit}Enable verbose logging.
 ''';

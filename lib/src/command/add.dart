@@ -5,15 +5,17 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 
 /// Handler for `dfn config add` command.
-Future<int> handleAdd(List<String> arguments, Logger logger) async {
+Future<int> handleAdd(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig configuration,
+) async {
   if (arguments.isEmpty) {
     logger.info(dfnConfigAddUsage);
     return ExitCode.usage.code;
   }
 
   checkVerbose(arguments, logger);
-
-  final configuration = getConfig(logger);
 
   for (final argument in arguments) {
     final path = p.canonicalize(p.normalize(argument));

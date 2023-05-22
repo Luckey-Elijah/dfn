@@ -6,12 +6,18 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 
 /// Handler for `dfn config` command.
-Future<int> handleConfig(List<String> arguments, Logger logger) async {
+Future<int> handleConfig(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig config,
+) async {
   if (arguments.isEmpty) {
     logger.info(dfnConfigUsage);
     return ExitCode.usage.code;
   }
+
   checkVerbose(arguments, logger);
+
   final handlers = <String, Handler>{
     'add': handleAdd,
     'list': handleList,
@@ -20,11 +26,15 @@ Future<int> handleConfig(List<String> arguments, Logger logger) async {
     'rm': handleRemove
   };
 
-  final handler = handlers[arguments.first] ?? _defaultHandler;
-  return handler(arguments.sublist(1), logger);
+  final handler = handlers[arguments.first];
+  if (handler == null) return _defaultHandler(arguments, logger, config);
+  logger.detail(
+    '[handleConfig] Using built-in "dfn config" option/command: ${arguments.first}',
+  );
+  return handler(arguments.sublist(1), logger, config);
 }
 
-int _defaultHandler(List<String> arguments, Logger logger) {
+int _defaultHandler(List<String> arguments, Logger logger, DfnConfig _) {
   logger
     ..warn('could not handle: dfn config ${arguments.join(' ')}')
     ..info(dfnConfigUsage);
@@ -55,25 +65,28 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 /// Retrieve the `dfn` configuration.
 /// Will create the configuration if it does not exist.
 DfnConfig getConfig(Logger logger) {
-  logger.detail('Checking for if home path exists: $home.');
+  logger.detail('[getConfig] Checking for if home path exists: $home.');
 
   if (!Directory(p.normalize('$home')).existsSync()) {
     throw FileSystemException('User home path does not exist.', '$home');
   }
 
-  logger.detail('Home path exists ✓.');
+  logger.detail('[getConfig] Home path exists: $home.');
   final path = p.canonicalize(p.join('$home', '.dfn'));
   final configFile = File(path);
-  logger.detail('Checking for if dfn config exists: $path.');
+  logger.detail('[getConfig] Checking for if dfn config exists: $path.');
 
   if (!configFile.existsSync()) {
-    logger.detail('No dfn config found. Creating empty dfn config at $path.');
+    logger.detail(
+      '[getConfig] No dfn config found. Creating empty dfn config at $path.',
+    );
     // initialize the default config
     final empty = DfnConfig.empty(configFile);
     final config = writeConfig(empty, logger);
     return config;
+  } else {
+    logger.detail('[getConfig] dfn config exists at: $path');
   }
-  logger.detail('✓ dfn config exists.');
   final contents = configFile.readAsStringSync();
   final config = DfnConfig.fromJsonAndFile(
     jsonDecode(contents) as Map<String, dynamic>,
@@ -89,10 +102,12 @@ DfnConfig writeConfig(
   Logger logger,
 ) {
   config.source.createSync();
-  final data = config.toMap();
+  final data = config.toJson();
   config.source.writeAsStringSync(jsonEncode(data));
   logger
-    ..detail('Wrote to ${p.canonicalize(config.source.absolute.path)}: ')
+    ..detail(
+      '[writeConfig] Wrote to ${p.canonicalize(config.source.absolute.path)}: ',
+    )
     ..detail(const JsonEncoder.withIndent('  ').convert(data));
   return config;
 }
@@ -127,10 +142,10 @@ class DfnConfig {
     Map<String, dynamic> map,
     File source,
   ) {
-    final updateLastCheckedSrc = map['updateLastChecked'] as int?;
+    final updateLastCheckedSrc = map['updateLastChecked'] as String?;
     return DfnConfig(
       updateLastChecked: updateLastCheckedSrc != null
-          ? DateTime.fromMicrosecondsSinceEpoch(updateLastCheckedSrc)
+          ? DateTime.tryParse(updateLastCheckedSrc)
           : null,
       source: source,
       packages: List<String>.from(map['packages'] as List<dynamic>? ?? []),
@@ -160,11 +175,11 @@ class DfnConfig {
   /// Whether any package or standalone scripts exist.
   bool get hasScripts => packages.isNotEmpty || standalone.isNotEmpty;
 
-  /// Converts this config into JSON-like map.
-  Map<String, dynamic> toMap() => {
+  /// Convert config into JSON object.
+  Map<String, dynamic> toJson() => {
         'packages': packages,
         'standalone': standalone,
         'version': version,
-        'updateLastChecked': updateLastChecked,
+        'updateLastChecked': updateLastChecked?.toIso8601String(),
       };
 }

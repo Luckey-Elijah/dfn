@@ -7,12 +7,15 @@ import 'package:mason_logger/mason_logger.dart';
 Future<int> run(List<String> arguments, Logger logger) async {
   checkVerbose(arguments, logger);
 
+  final config = await checkForUpdate(
+    getConfig(logger),
+    logger,
+  );
+
   if (arguments.isEmpty) {
     logger.info(dfnUsage);
     return ExitCode.usage.code;
   }
-
-  await _checkForUpdate(logger);
 
   final handlers = <String, Handler>{
     '--help': handleHelp,
@@ -23,27 +26,22 @@ Future<int> run(List<String> arguments, Logger logger) async {
   };
 
   final handler = handlers[arguments.first];
-  if (handler == null) return _handleTarget(arguments, logger);
-  return handler(arguments.sublist(1), logger);
+  if (handler == null) return _handleTarget(arguments, logger, config);
+  logger.detail(
+    '[run] Using built-in "dfn" option/command: ${arguments.first}',
+  );
+  return handler(arguments.sublist(1), logger, config);
 }
 
-Future<int> _handleTarget(List<String> arguments, Logger logger) async {
-  final configuration = getConfig(logger);
-
+Future<int> _handleTarget(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig configuration,
+) {
   return handleTarget(
     target: arguments.first,
     config: configuration,
     args: arguments.sublist(1),
     logger: logger,
   );
-}
-
-Future<void> _checkForUpdate(Logger logger) async {
-  // read dfn config
-  // if updateLastChecked is null || updateLastChecked > 48h ago
-  // - fetch version info
-  // - if available, notify user
-  // - write to dfn -> DateTime.now....utc?
-
-  throw UnimplementedError('_checkForUpdate');
 }

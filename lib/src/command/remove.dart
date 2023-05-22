@@ -5,7 +5,11 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart';
 
 /// Handler for `dfn config remove` or `dfn config rm` command.
-Future<int> handleRemove(List<String> arguments, Logger logger) async {
+Future<int> handleRemove(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig config,
+) async {
   if (arguments.isEmpty) {
     logger.info(dfnConfigRemoveUsage);
     return ExitCode.usage.code;
@@ -13,7 +17,6 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
 
   checkVerbose(arguments, logger);
 
-  final config = getConfig(logger);
   final newStandalone = <String>[];
   final newPackages = <String>[];
 

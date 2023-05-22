@@ -10,6 +10,7 @@
 /// ```
 library dfn;
 
+export 'src/check_for_update.dart';
 export 'src/command/add.dart';
 export 'src/command/config.dart';
 export 'src/command/help.dart';

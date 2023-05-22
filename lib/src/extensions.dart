@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 /// {@template style}
@@ -20,8 +21,12 @@ extension Fit on String {
   String get fit => padRight(16);
 }
 
-/// Function for handling commands.
-typedef Handler = FutureOr<int> Function(List<String> arguments, Logger logger);
+/// Function for handling commands and options.
+typedef Handler = FutureOr<int> Function(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig config,
+);
 
 /// Check if `--verbose` is the first argument and then sets
 /// the logger to verbose mode.
@@ -29,7 +34,8 @@ void checkVerbose(List<String> arguments, Logger logger) {
   if (arguments.isNotEmpty && arguments.first == '--verbose') {
     logger
       ..level = Level.verbose
-      ..detail('Enabled verbose mode');
+      ..detail('[checkVerbose] Enabling verbose mode.')
+      ..detail('[checkVerbose] Removing "--verbose" argument.');
     arguments.remove('--verbose');
   }
 }
