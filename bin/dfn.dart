@@ -6,7 +6,7 @@ import 'package:mason_logger/mason_logger.dart';
 
 Future<void> main(List<String> args) async {
   final logger = Logger();
-  return _flushThenExit(await run(args, logger));
+  return _flushThenExit(await run([...args], logger));
 }
 
 Future<void> _flushThenExit(int status) async {
