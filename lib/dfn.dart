@@ -10,11 +10,11 @@
 /// ```
 library dfn;
 
-export 'src/add.dart';
-export 'src/config.dart';
+export 'src/command/add.dart';
+export 'src/command/config.dart';
+export 'src/command/help.dart';
+export 'src/command/list.dart';
+export 'src/command/remove.dart';
+export 'src/command/target.dart';
 export 'src/extensions.dart';
-export 'src/help.dart';
-export 'src/list.dart';
-export 'src/remove.dart';
 export 'src/run.dart';
-export 'src/target.dart';

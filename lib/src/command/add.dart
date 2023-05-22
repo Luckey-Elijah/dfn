@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
 /// Handler for `dfn config add` command.
 Future<int> handleAdd(List<String> arguments, Logger logger) async {
@@ -11,10 +11,12 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
     return ExitCode.usage.code;
   }
 
+  checkVerbose(arguments, logger);
+
   final (configFile, configuration) = await getConfig(logger);
 
   for (final argument in arguments) {
-    final path = canonicalize(normalize(argument));
+    final path = p.canonicalize(p.normalize(argument));
     final pathType = FileSystemEntity.typeSync(path);
 
     if (pathType == FileSystemEntityType.file) {
@@ -38,7 +40,8 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
         version: DfnConfig.currentVersion,
       );
       await writeConfig(newConfig, newConfig.source, logger);
-      final scriptName = split(file.absolute.path).last.replaceAll('.dart', '');
+      final scriptName =
+          p.split(file.absolute.path).last.replaceAll('.dart', '');
       logger.success('Registered $scriptName');
       return ExitCode.success.code;
     }
@@ -60,7 +63,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
         );
       }
 
-      final scriptsDir = Directory(join(directory.absolute.path, 'scripts'));
+      final scriptsDir = Directory(p.join(directory.absolute.path, 'scripts'));
       if (!scriptsDir.existsSync()) {
         logger.warn(
           '${directory.absolute.path} does not contain "script" sub-folder.',
@@ -72,7 +75,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
           .where((entity) => entity is File)
           .cast<File>()
           .where((file) => file.absolute.path.endsWith('.dart'))
-          .where((file) => !split(file.absolute.path).last.startsWith('_'))
+          .where((file) => !p.split(file.absolute.path).last.startsWith('_'))
           .toList();
 
       final newConfig = DfnConfig(
@@ -91,7 +94,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
 
       for (final script in newScripts) {
         final path = script.absolute.path;
-        final name = styleBold.wrap(split(path).last.replaceAll('.dart', ''));
+        final name = styleBold.wrap(p.split(path).last.replaceAll('.dart', ''));
         final source = link(uri: Uri.file(path), message: path);
         logger.info('  - $name -> $source');
       }

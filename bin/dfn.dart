@@ -9,7 +9,7 @@ Future<void> main(List<String> args) async {
   return _flushThenExit(await run([...args], logger));
 }
 
-Future<void> _flushThenExit(int status) => [
-      stdout.close(),
-      stderr.close(),
-    ].wait.then<void>((_) => exit(status));
+Future<void> _flushThenExit(int status) async {
+  await [stdout.close(), stderr.close()].wait;
+  exit(status);
+}

@@ -10,10 +10,7 @@ Future<int> run(List<String> arguments, Logger logger) async {
     return ExitCode.usage.code;
   }
 
-  if (arguments.first == '--verbose') {
-    logger.level = Level.verbose;
-    arguments.remove('--verbose');
-  }
+  checkVerbose(arguments, logger);
 
   if (arguments.isEmpty) {
     logger.info(dfnUsage);
@@ -30,7 +27,7 @@ Future<int> run(List<String> arguments, Logger logger) async {
 
   final handler = handlers[arguments.first];
   if (handler == null) return _handleTarget(arguments, logger);
-  return handler(arguments.rest, logger);
+  return handler(arguments.sublist(1), logger);
 }
 
 Future<int> _handleTarget(List<String> arguments, Logger logger) async {
@@ -39,7 +36,7 @@ Future<int> _handleTarget(List<String> arguments, Logger logger) async {
   return handleTarget(
     target: arguments.first,
     config: configuration,
-    args: arguments.rest,
+    args: arguments.sublist(1),
     logger: logger,
   );
 }

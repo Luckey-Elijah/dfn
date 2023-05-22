@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
 /// Handler for `dfn config` command.
 Future<int> handleConfig(List<String> arguments, Logger logger) async {
@@ -11,7 +11,7 @@ Future<int> handleConfig(List<String> arguments, Logger logger) async {
     logger.info(dfnConfigUsage);
     return ExitCode.usage.code;
   }
-
+  checkVerbose(arguments, logger);
   final handlers = <String, Handler>{
     'add': handleAdd,
     'list': handleList,
@@ -21,12 +21,12 @@ Future<int> handleConfig(List<String> arguments, Logger logger) async {
   };
 
   final handler = handlers[arguments.first] ?? _defaultHandler;
-  return handler(arguments.rest, logger);
+  return handler(arguments.sublist(1), logger);
 }
 
 int _defaultHandler(List<String> arguments, Logger logger) {
   logger
-    ..warn('could not handler: dfn config ${arguments.join(' ')}')
+    ..warn('could not handle: dfn config ${arguments.join(' ')}')
     ..info(dfnConfigUsage);
   return ExitCode.usage.code;
 }
@@ -57,12 +57,12 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 Future<(File, DfnConfig)> getConfig(Logger logger) async {
   logger.detail('Checking for if home path exists: $home.');
 
-  if (!Directory(normalize('$home')).existsSync()) {
+  if (!Directory(p.normalize('$home')).existsSync()) {
     throw FileSystemException('User home path does not exist.', '$home');
   }
 
   logger.detail('Home path exists ✓.');
-  final path = canonicalize(join('$home', '.dfn'));
+  final path = p.canonicalize(p.join('$home', '.dfn'));
   final configFile = File(path);
   logger.detail('Checking for if dfn config exists: $path.');
 
@@ -75,7 +75,10 @@ Future<(File, DfnConfig)> getConfig(Logger logger) async {
   }
   logger.detail('✓ dfn config exists.');
   final contents = await configFile.readAsString();
-  final config = DfnConfig.fromJson(contents, configFile);
+  final config = DfnConfig.fromJsonAndFile(
+    jsonDecode(contents) as Map<String, dynamic>,
+    configFile,
+  );
   return (configFile, config);
 }
 
@@ -90,8 +93,8 @@ Future<(File, DfnConfig)> writeConfig(
   final data = config.toMap();
   await source.writeAsString(jsonEncode(data));
   logger
-    ..detail('Wrote to ${canonicalize(source.absolute.path)}: ')
-    ..detail(jsonPretty(data));
+    ..detail('Wrote to ${p.canonicalize(source.absolute.path)}: ')
+    ..detail(const JsonEncoder.withIndent('  ').convert(data));
   return (source, config);
 }
 
@@ -117,22 +120,18 @@ class DfnConfig {
           source: source,
         );
 
-  /// Create a [DfnConfig] from Map and target/source file.
-  /// {@macro dfn_config}
-  factory DfnConfig.fromMap(Map<String, dynamic> map, File source) {
-    return DfnConfig(
-      source: source,
-      packages: List<String>.from(map['packages'] as List<dynamic>? ?? []),
-      standalone: List<String>.from(map['standalone'] as List<dynamic>? ?? []),
-      version: int.tryParse(map['version'].toString()) ?? currentVersion,
-    );
-  }
-
   /// Create a [DfnConfig] from JSON String.
   /// {@macro dfn_config}
-  factory DfnConfig.fromJson(String contents, File source) => DfnConfig.fromMap(
-        json.decode(contents) as Map<String, dynamic>,
-        source,
+  factory DfnConfig.fromJsonAndFile(
+    Map<String, dynamic> map,
+    File source,
+  ) =>
+      DfnConfig(
+        source: source,
+        packages: List<String>.from(map['packages'] as List<dynamic>? ?? []),
+        standalone:
+            List<String>.from(map['standalone'] as List<dynamic>? ?? []),
+        version: int.tryParse(map['version'].toString()) ?? currentVersion,
       );
 
   /// Most recent version of the schema.
@@ -159,17 +158,4 @@ class DfnConfig {
         'standalone': standalone,
         'version': version,
       };
-}
-
-/// "Pretty" printer for json. **Only use this for logging.**
-String jsonPretty(Map<Object?, Object?> json) {
-  final buffer = StringBuffer();
-
-  for (final MapEntry(:key, :value) in json.entries) {
-    buffer
-      ..write(bold('$key: '))
-      ..writeln(value is Map ? jsonPretty(value) : value);
-  }
-
-  return '$buffer';
 }
