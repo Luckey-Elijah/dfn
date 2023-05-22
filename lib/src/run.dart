@@ -28,7 +28,7 @@ Future<int> run(List<String> arguments, Logger logger) async {
 }
 
 Future<int> _handleTarget(List<String> arguments, Logger logger) async {
-  final (_, configuration) = getConfig(logger);
+  final configuration = getConfig(logger);
 
   return handleTarget(
     target: arguments.first,

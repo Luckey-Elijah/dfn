@@ -13,7 +13,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
 
   checkVerbose(arguments, logger);
 
-  final (configFile, configuration) = getConfig(logger);
+  final configuration = getConfig(logger);
 
   for (final argument in arguments) {
     final path = p.canonicalize(p.normalize(argument));
@@ -36,7 +36,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
       final newConfig = DfnConfig(
         packages: configuration.packages,
         standalone: [...configuration.standalone, file.absolute.path],
-        source: configFile,
+        source: configuration.source,
         version: DfnConfig.currentVersion,
       );
       writeConfig(newConfig, logger);
@@ -81,7 +81,7 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
       final newConfig = DfnConfig(
         packages: [...configuration.packages, directory.absolute.path],
         standalone: configuration.standalone,
-        source: configFile,
+        source: configuration.source,
         version: DfnConfig.currentVersion,
       );
 

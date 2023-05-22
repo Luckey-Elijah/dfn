@@ -23,7 +23,7 @@ Future<int> handleList(List<String> arguments, Logger logger) async {
 
   final progress = logger.progress('Reading register scripts');
 
-  final (_, config) = getConfig(logger);
+  final config = getConfig(logger);
 
   final results = await lsScriptFiles(
     config: config,

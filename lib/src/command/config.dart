@@ -54,7 +54,7 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
 
 /// Retrieve the `dfn` configuration.
 /// Will create the configuration if it does not exist.
-(File, DfnConfig) getConfig(Logger logger) {
+DfnConfig getConfig(Logger logger) {
   logger.detail('Checking for if home path exists: $home.');
 
   if (!Directory(p.normalize('$home')).existsSync()) {
@@ -71,7 +71,7 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
     // initialize the default config
     final empty = DfnConfig.empty(configFile);
     final config = writeConfig(empty, logger);
-    return (configFile, config);
+    return config;
   }
   logger.detail('✓ dfn config exists.');
   final contents = configFile.readAsStringSync();
@@ -79,7 +79,7 @@ final home = Platform.environment[Platform.isWindows ? 'UserProfile' : 'HOME'];
     jsonDecode(contents) as Map<String, dynamic>,
     configFile,
   );
-  return (configFile, config);
+  return config;
 }
 
 /// Write to the `dfn` configuration file.

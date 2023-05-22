@@ -13,7 +13,7 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
 
   checkVerbose(arguments, logger);
 
-  final (configFile, config) = getConfig(logger);
+  final config = getConfig(logger);
   final newStandalone = <String>[];
   final newPackages = <String>[];
 
@@ -51,7 +51,7 @@ Future<int> handleRemove(List<String> arguments, Logger logger) async {
         packages: newPackages,
         standalone: newStandalone,
         version: DfnConfig.currentVersion,
-        source: configFile,
+        source: config.source,
       ),
       logger,
     );
