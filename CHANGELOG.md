@@ -1,3 +1,7 @@
+# 0.2.1
+
+- fix: empty list check in `--verbose` checker
+
 # 0.2.0
 
 Code improvements:
