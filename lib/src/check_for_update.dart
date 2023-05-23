@@ -13,7 +13,8 @@ const version = '0.2.2';
 Future<DfnConfig> checkForUpdate(DfnConfig config, Logger logger) async {
   final now = DateTime.now();
   logger.detail(
-    '[checkForUpdate] Checking config for "updateLastChecked" is longer than 48 hours.',
+    '[checkForUpdate] Checking config for "updateLastChecked" is longer than '
+    '48 hours.',
   );
   try {
     final updateLastChecked = config.updateLastChecked;
