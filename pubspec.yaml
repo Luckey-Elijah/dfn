@@ -1,5 +1,5 @@
 name: dfn
-version: 0.2.1
+version: 0.2.2
 repository: https://github.com/Luckey-Elijah/dfn
 description: Use Dart as your scripting language, and register scripts from anywhere.
 
@@ -7,8 +7,10 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  http: ^0.13.6
   mason_logger: ^0.2.4
   path: ^1.8.3
+  pub_semver: ^2.1.4
 
 dev_dependencies:
   apealed_analysis: ^0.0.1

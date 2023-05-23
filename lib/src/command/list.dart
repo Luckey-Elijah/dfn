@@ -18,12 +18,14 @@ enum RegisterSource {
 }
 
 /// Handler for `dfn ls`, `dfn list` command.
-Future<int> handleList(List<String> arguments, Logger logger) async {
+Future<int> handleList(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig config,
+) async {
   checkVerbose(arguments, logger);
 
   final progress = logger.progress('Reading register scripts');
-
-  final (_, config) = await getConfig(logger);
 
   final results = await lsScriptFiles(
     config: config,
@@ -72,7 +74,7 @@ Stream<({File file, RegisterSource type})> lsScriptFiles({
   required void Function(String) onInvalidPath,
   required Logger logger,
 }) async* {
-  logger.detail('Checking for standalone scripts');
+  logger.detail('[lsScriptFiles] Checking for standalone scripts.');
   for (final path in config.standalone) {
     final file = File(path);
 
@@ -80,12 +82,15 @@ Stream<({File file, RegisterSource type})> lsScriptFiles({
       onInvalidPath(path);
       continue;
     }
-    logger.detail('found standalone script: ${file.absolute.path}');
+
+    logger.detail(
+      '[lsScriptFiles] Found standalone script: ${file.absolute.path}.',
+    );
 
     yield (file: file, type: RegisterSource.script);
   }
 
-  logger.detail('Checking for package scripts');
+  logger.detail('[lsScriptFiles] Checking for package scripts.');
   for (final package in config.packages) {
     final packageDirectory = Directory(package);
 
@@ -102,7 +107,10 @@ Stream<({File file, RegisterSource type})> lsScriptFiles({
       continue;
     }
 
-    logger.detail('found scripts directory: ${scriptsDirectory.absolute.path}');
+    logger.detail(
+      '[lsScriptFiles] found scripts directory: '
+      '${scriptsDirectory.absolute.path}.',
+    );
 
     await for (final file in scriptsDirectory
         .list()
@@ -111,7 +119,8 @@ Stream<({File file, RegisterSource type})> lsScriptFiles({
         .where((file) => file.absolute.path.toLowerCase().endsWith('.dart'))
         .where((file) => !p.split(file.absolute.path).last.startsWith('_'))) {
       logger.detail(
-        'found script registered in "script" path: ${file.absolute.path}',
+        '[lsScriptFiles] found script registered in "script" path: '
+        '${file.absolute.path}',
       );
       yield (file: file, type: RegisterSource.path);
     }

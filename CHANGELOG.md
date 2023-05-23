@@ -1,3 +1,7 @@
+# 0.2.2
+
+- feat: adds version update check
+
 # 0.2.1
 
 - fix: empty list check in `--verbose` checker

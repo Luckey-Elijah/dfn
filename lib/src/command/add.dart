@@ -5,15 +5,17 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 
 /// Handler for `dfn config add` command.
-Future<int> handleAdd(List<String> arguments, Logger logger) async {
+Future<int> handleAdd(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig configuration,
+) async {
   if (arguments.isEmpty) {
     logger.info(dfnConfigAddUsage);
     return ExitCode.usage.code;
   }
 
   checkVerbose(arguments, logger);
-
-  final (configFile, configuration) = await getConfig(logger);
 
   for (final argument in arguments) {
     final path = p.canonicalize(p.normalize(argument));
@@ -36,10 +38,10 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
       final newConfig = DfnConfig(
         packages: configuration.packages,
         standalone: [...configuration.standalone, file.absolute.path],
-        source: configFile,
+        source: configuration.source,
         version: DfnConfig.currentVersion,
       );
-      await writeConfig(newConfig, newConfig.source, logger);
+      writeConfig(newConfig, logger);
       final scriptName =
           p.split(file.absolute.path).last.replaceAll('.dart', '');
       logger.success('Registered $scriptName');
@@ -81,11 +83,11 @@ Future<int> handleAdd(List<String> arguments, Logger logger) async {
       final newConfig = DfnConfig(
         packages: [...configuration.packages, directory.absolute.path],
         standalone: configuration.standalone,
-        source: configFile,
+        source: configuration.source,
         version: DfnConfig.currentVersion,
       );
 
-      await writeConfig(newConfig, newConfig.source, logger);
+      writeConfig(newConfig, logger);
       final count = newScripts.length;
       final s = newScripts.length > 1 ? 's' : '';
       logger.success(

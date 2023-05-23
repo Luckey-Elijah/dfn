@@ -5,12 +5,12 @@ import 'package:mason_logger/mason_logger.dart';
 
 /// Entry point for `dfn` command.
 Future<int> run(List<String> arguments, Logger logger) async {
-  if (arguments.isEmpty) {
-    logger.info(dfnUsage);
-    return ExitCode.usage.code;
-  }
-
   checkVerbose(arguments, logger);
+
+  final config = await checkForUpdate(
+    getConfig(logger),
+    logger,
+  );
 
   if (arguments.isEmpty) {
     logger.info(dfnUsage);
@@ -26,13 +26,18 @@ Future<int> run(List<String> arguments, Logger logger) async {
   };
 
   final handler = handlers[arguments.first];
-  if (handler == null) return _handleTarget(arguments, logger);
-  return handler(arguments.sublist(1), logger);
+  if (handler == null) return _handleTarget(arguments, logger, config);
+  logger.detail(
+    '[run] Using built-in "dfn" option/command: ${arguments.first}',
+  );
+  return handler(arguments.sublist(1), logger, config);
 }
 
-Future<int> _handleTarget(List<String> arguments, Logger logger) async {
-  final (_, configuration) = await getConfig(logger);
-
+Future<int> _handleTarget(
+  List<String> arguments,
+  Logger logger,
+  DfnConfig configuration,
+) {
   return handleTarget(
     target: arguments.first,
     config: configuration,
