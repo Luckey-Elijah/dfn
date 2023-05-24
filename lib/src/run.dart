@@ -2,13 +2,33 @@ import 'dart:async';
 
 import 'package:dfn/dfn.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:meta/meta.dart';
+
+/// Override a given option or command with the handler.
+/// This will always be used if non-null.
+@visibleForTesting
+({
+  Handler? handler,
+  void Function(List<String> arguments, Logger logger)? checkVerbose,
+  DfnConfig Function(Logger logger)? getConfig,
+  Future<DfnConfig> Function(DfnConfig config, Logger logger)? checkForUpdate,
+  Future<int> Function({
+    required String target,
+    required DfnConfig config,
+    required List<String> args,
+    required Logger logger,
+  })? handleTarget,
+})? testOverrides;
 
 /// Entry point for `dfn` command.
-Future<int> run(List<String> arguments, Logger logger) async {
-  checkVerbose(arguments, logger);
+Future<int> run(
+  List<String> arguments,
+  Logger logger,
+) async {
+  (testOverrides?.checkVerbose ?? checkVerbose)(arguments, logger);
 
-  final config = await checkForUpdate(
-    getConfig(logger),
+  final config = await (testOverrides?.checkForUpdate ?? checkForUpdate).call(
+    (testOverrides?.getConfig ?? getConfig).call(logger),
     logger,
   );
 
@@ -25,7 +45,7 @@ Future<int> run(List<String> arguments, Logger logger) async {
     'config': handleConfig,
   };
 
-  final handler = handlers[arguments.first];
+  final handler = testOverrides?.handler ?? handlers[arguments.first];
   if (handler == null) return _handleTarget(arguments, logger, config);
   logger.detail(
     '[run] Using built-in "dfn" option/command: ${arguments.first}',
@@ -38,7 +58,7 @@ Future<int> _handleTarget(
   Logger logger,
   DfnConfig configuration,
 ) {
-  return handleTarget(
+  return (testOverrides?.handleTarget ?? handleTarget)(
     target: arguments.first,
     config: configuration,
     args: arguments.sublist(1),
